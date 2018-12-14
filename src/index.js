@@ -32,7 +32,7 @@ const reconciliator = new BankingReconciliator({
   BankTransaction
 });
 
-const baseUrl = 'https://sync.bankin.com/v2';
+const baseUrl = 'https://sync.bankin.com';
 const bankinVersion = '2018-06-15';
 let accesToken;
 let banks;
@@ -57,18 +57,24 @@ async function start(fields) {
   log('info', `Found #${accounts.length} accounts`);
 
   let allOperations = [];
+  let vendors = [];
 
   log('info', 'Fetching operations');
   for (let account of accounts) {
+    vendors.push(account.vendorId);
     log(
       'info',
       `Fetching operations of account ${account.vendorId} - ${account.label}`
     );
     let operations = await fetchOperations(fields, account);
+    log('info', `Found #${operations.length} operations`);
 
     allOperations = [...allOperations, ...operations];
   }
-  log('info', `Found #${allOperations.length} operations`);
+  allOperations = allOperations.filter(
+    operation => vendors.indexOf(operation.vendorAccountId) !== -1
+  );
+  log('info', `Found #${allOperations.length} operations in total`);
 
   const { accounts: savedAccounts } = await reconciliator.save(
     accounts,
@@ -85,7 +91,7 @@ function authenticate({
   password,
   bankinDevice
 }) {
-  const url = `${baseUrl}/authenticate`;
+  const url = `${baseUrl}/v2/authenticate`;
   const qs = {
     client_id,
     client_secret,
@@ -115,7 +121,7 @@ function authenticate({
 }
 
 function fetchBanks({ client_id, client_secret }) {
-  const url = `${baseUrl}/banks`;
+  const url = `${baseUrl}/v2/banks`;
   const qs = {
     client_id,
     client_secret,
@@ -157,7 +163,7 @@ function formatBanks(countries) {
 }
 
 function fetchAccounts({ client_id, client_secret }) {
-  const url = `${baseUrl}/accounts`;
+  const url = `${baseUrl}/v2/accounts`;
   const qs = {
     client_id,
     client_secret,
@@ -207,8 +213,8 @@ function formatAccounts(accounts) {
   });
 }
 
-function fetchOperations({ client_id, client_secret }, account) {
-  const url = `${baseUrl}/accounts/${account.vendorId}/transactions`;
+const fetchOperations = async ({ client_id, client_secret }, account) => {
+  const url = `${baseUrl}/v2/accounts/${account.vendorId}/transactions`;
   const qs = {
     client_id,
     client_secret,
@@ -224,17 +230,23 @@ function fetchOperations({ client_id, client_secret }, account) {
       authorization: `Bearer ${accesToken}`
     }
   };
+  let operations = [];
+  let hasNext = false;
 
-  return new Promise(async resolve => {
-    try {
-      const response = await request(options);
+  do {
+    const response = await request(options);
 
-      resolve(formatOperations(response.resources));
-    } catch (error) {
-      throw new Error(errors.VENDOR_DOWN);
+    operations = [...operations, ...formatOperations(response.resources)];
+    hasNext = false;
+
+    if (response.pagination.next_uri) {
+      hasNext = true;
+      options.url = `${baseUrl}${response.pagination.next_uri}`;
     }
-  });
-}
+  } while (hasNext);
+
+  return operations;
+};
 
 function formatOperations(operations) {
   return operations.map(operation => {
