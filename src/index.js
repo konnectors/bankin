@@ -16,7 +16,7 @@ const { BankAccount, BankTransaction, BankingReconciliator } = doctypes;
 const request = requestFactory({
   // the debug mode shows all the details about http request and responses. Very useful for
   // debugging but very verbose. That is why it is commented out by default
-  debug: true,
+  debug: false,
   // activates [cheerio](https://cheerio.js.org/) parsing on each page
   cheerio: false,
   // If cheerio is activated do not forget to deactivate json parsing (which is activated by
@@ -249,7 +249,6 @@ function formatOperations(operations) {
       originalLabel: operation.raw_description,
       type: 'none',
       automaticCategoryId: category,
-      cozyCategoryId: category,
       dateImport: new Date(),
       dateOperation: new Date(operation.date),
       currency: operation.currency_code,
