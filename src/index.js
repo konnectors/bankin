@@ -57,11 +57,9 @@ async function start(fields) {
   log('info', `Found #${accounts.length} accounts`);
 
   let allOperations = [];
-  let vendors = [];
 
   log('info', 'Fetching operations');
   for (let account of accounts) {
-    vendors.push(account.vendorId);
     log(
       'info',
       `Fetching operations of account ${account.vendorId} - ${account.label}`
@@ -71,10 +69,9 @@ async function start(fields) {
 
     allOperations = [...allOperations, ...operations];
   }
-  allOperations = allOperations.filter(
-    operation => vendors.indexOf(operation.vendorAccountId) !== -1
-  );
-  log('info', `Found #${allOperations.length} operations in total`);
+  log('info', `Found #${allOperations.length} operations before filtering`);
+  allOperations = filterOperations(accounts, allOperations);
+  log('info', `Found #${allOperations.length} operations after filtering`);
 
   const { accounts: savedAccounts } = await reconciliator.save(
     accounts,
@@ -84,13 +81,30 @@ async function start(fields) {
   await saveBalances(balances);
 }
 
-function authenticate({
+const filterOperations = (accounts, operations) => {
+  const vendorsIds = accounts.map(account => account.vendorId);
+  const operationsIds = [];
+
+  return operations
+    .filter(operation => vendorsIds.indexOf(operation.vendorAccountId) !== -1)
+    .filter(operation => {
+      if (operationsIds.indexOf(operation.vendorId) === -1) {
+        operationsIds.push(operation.vendorId);
+
+        return true;
+      }
+
+      return false;
+    });
+};
+
+const authenticate = ({
   client_id,
   client_secret,
   email,
   password,
   bankinDevice
-}) {
+}) => {
   const url = `${baseUrl}/v2/authenticate`;
   const qs = {
     client_id,
@@ -118,9 +132,9 @@ function authenticate({
       throw new Error(errors.LOGIN_FAILED);
     }
   });
-}
+};
 
-function fetchBanks({ client_id, client_secret }) {
+const fetchBanks = ({ client_id, client_secret }) => {
   const url = `${baseUrl}/v2/banks`;
   const qs = {
     client_id,
@@ -146,9 +160,9 @@ function fetchBanks({ client_id, client_secret }) {
       throw new Error(errors.VENDOR_DOWN);
     }
   });
-}
+};
 
-function formatBanks(countries) {
+const formatBanks = countries => {
   let banks = {};
 
   countries.forEach(country => {
@@ -160,9 +174,9 @@ function formatBanks(countries) {
   });
 
   return banks;
-}
+};
 
-function fetchAccounts({ client_id, client_secret }) {
+const fetchAccounts = ({ client_id, client_secret }) => {
   const url = `${baseUrl}/v2/accounts`;
   const qs = {
     client_id,
@@ -189,9 +203,9 @@ function fetchAccounts({ client_id, client_secret }) {
       throw new Error(errors.VENDOR_DOWN);
     }
   });
-}
+};
 
-function formatAccounts(accounts) {
+const formatAccounts = accounts => {
   return accounts.map(account => {
     let bank = 'none';
 
@@ -211,7 +225,7 @@ function formatAccounts(accounts) {
       vendorId: account.id
     };
   });
-}
+};
 
 const fetchOperations = async ({ client_id, client_secret }, account) => {
   const url = `${baseUrl}/v2/accounts/${account.vendorId}/transactions`;
@@ -248,7 +262,7 @@ const fetchOperations = async ({ client_id, client_secret }, account) => {
   return operations;
 };
 
-function formatOperations(operations) {
+const formatOperations = operations => {
   return operations.map(operation => {
     const category =
       operation.category.id in operationCategoryMapping
@@ -269,9 +283,9 @@ function formatOperations(operations) {
       amount: operation.amount
     };
   });
-}
+};
 
-function fetchBalances(accounts) {
+const fetchBalances = accounts => {
   const now = moment();
   const todayAsString = now.format('YYYY-MM-DD');
   const currentYear = now.year();
@@ -284,9 +298,9 @@ function fetchBalances(accounts) {
       return history;
     })
   );
-}
+};
 
-async function getBalanceHistory(year, accountId) {
+const getBalanceHistory = async (year, accountId) => {
   const index = await cozyClient.data.defineIndex(
     'io.cozy.bank.balancehistories',
     ['year', 'relationships.account.data._id']
@@ -310,9 +324,9 @@ async function getBalanceHistory(year, accountId) {
     `io.cozy.bank.balancehistories document not found for year ${year} and account ${accountId}, creating a new one`
   );
   return getEmptyBalanceHistory(year, accountId);
-}
+};
 
-function getEmptyBalanceHistory(year, accountId) {
+const getEmptyBalanceHistory = (year, accountId) => {
   return {
     year,
     balances: {},
@@ -328,8 +342,8 @@ function getEmptyBalanceHistory(year, accountId) {
       }
     }
   };
-}
+};
 
-function saveBalances(balances) {
+const saveBalances = balances => {
   return updateOrCreate(balances, 'io.cozy.bank.balancehistories', ['_id']);
-}
+};
