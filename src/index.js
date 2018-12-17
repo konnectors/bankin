@@ -85,13 +85,12 @@ async function start(fields) {
   await saveBalances(balances);
 }
 
-const surchargeFields = (fields) => {
-  log('info', fields);
-  if (!fields.client_id) {
+const surchargeFields = fields => {
+  if (!(typeof fields.client_id === 'string') || fields.client_id.length === 0) {
     fields.client_id = defaultClientId;
   }
 
-  if (!fields.client_secret) {
+  if (!(typeof fields.client_secret === 'string') || fields.client_secret.length === 0) {
     fields.client_secret = defaultClientSecret;
   }
 
