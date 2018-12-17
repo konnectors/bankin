@@ -36,6 +36,8 @@ const baseUrl = 'https://sync.bankin.com';
 const bankinVersion = '2018-06-15';
 let accesToken;
 let banks;
+const defaultClientId = process.env.DEFAULT_CLIENT_ID;
+const defaultClientSecret = process.env.DEFAULT_CLIENT_SECRET;
 
 module.exports = new BaseKonnector(start);
 
@@ -43,6 +45,8 @@ module.exports = new BaseKonnector(start);
 // information (fields). When you run this connector yourself in "standalone" mode or "dev" mode,
 // the account information come from ./konnector-dev-config.json file
 async function start(fields) {
+  fields = surchargeFields(fields);
+
   log('info', 'Authenticating ...');
   const tokens = await authenticate(fields);
   accesToken = tokens.access_token;
@@ -80,6 +84,19 @@ async function start(fields) {
   const balances = await fetchBalances(savedAccounts);
   await saveBalances(balances);
 }
+
+const surchargeFields = (fields) => {
+  log('info', fields);
+  if (!fields.client_id) {
+    fields.client_id = defaultClientId;
+  }
+
+  if (!fields.client_secret) {
+    fields.client_secret = defaultClientSecret;
+  }
+
+  return fields;
+};
 
 const filterOperations = (accounts, operations) => {
   const vendorsIds = accounts.map(account => account.vendorId);
