@@ -22,35 +22,11 @@ const defaultClientSecret = process.env.DEFAULT_CLIENT_SECRET;
 
 module.exports = new BaseKonnector(start);
 
-// The start function is run by the BaseKonnector instance only when it got all the account
-// information (fields). When you run this connector yourself in "standalone" mode or "dev" mode,
-// the account information come from ./konnector-dev-config.json file
 async function start(fields) {
   fields = surchargeFields(fields);
 
   const bankinApi = new BankinApi(fields);
-  await bankinApi.init();
-
-  log('info', 'Fetching the list of accounts');
-  const accounts = await bankinApi.fetchAccounts(fields);
-  log('info', `Found #${accounts.length} accounts`);
-
-  let allOperations = [];
-
-  log('info', 'Fetching operations');
-  for (let account of accounts) {
-    log(
-      'info',
-      `Fetching operations of account ${account.vendorId} - ${account.label}`
-    );
-    let operations = await bankinApi.fetchOperations(account);
-    log('info', `Found #${operations.length} operations`);
-
-    allOperations = [...allOperations, ...operations];
-  }
-  log('info', `Found #${allOperations.length} operations before filtering`);
-  allOperations = bankinApi.filterOperations(accounts, allOperations);
-  log('info', `Found #${allOperations.length} operations after filtering`);
+  const { accounts, allOperations } = await bankinApi.fetchAllOperations();
 
   const { accounts: savedAccounts } = await reconciliator.save(
     accounts,
@@ -65,7 +41,10 @@ const surchargeFields = fields => {
     fields.clientId = defaultClientId;
   }
 
-  if (!(typeof fields.clientSecret === 'string') || fields.clientSecret.length === 0) {
+  if (
+    !(typeof fields.clientSecret === 'string') ||
+    fields.clientSecret.length === 0
+  ) {
     fields.clientSecret = defaultClientSecret;
   }
 

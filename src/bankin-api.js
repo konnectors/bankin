@@ -70,6 +70,38 @@ module.exports = class BankinApi {
     });
   }
 
+  async fetchAllOperations() {
+    await this.init();
+    log('info', 'Fetching the list of accounts');
+    const accounts = await this.fetchAccounts();
+    log('info', `Found #${accounts.length} accounts`);
+
+    const allOperations = await this.fetchAccountsOperations(accounts);
+
+    return { accounts, allOperations };
+  }
+
+  async fetchAccountsOperations(accounts) {
+    let allOperations = [];
+
+    log('info', 'Fetching operations');
+    for (let account of accounts) {
+      log(
+        'info',
+        `Fetching operations of account ${account.vendorId} - ${account.label}`
+      );
+      let operations = await this.fetchOperations(account);
+      log('info', `Found #${operations.length} operations`);
+
+      allOperations = [...allOperations, ...operations];
+    }
+    log('info', `Found #${allOperations.length} operations before filtering`);
+    allOperations = this.filterOperations(accounts, allOperations);
+    log('info', `Found #${allOperations.length} operations after filtering`);
+
+    return allOperations;
+  }
+
   filterOperations(accounts, operations) {
     const vendorsIds = accounts.map(account => account.vendorId);
     const operationsIds = [];
