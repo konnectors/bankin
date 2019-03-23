@@ -23,17 +23,26 @@ const defaultClientSecret = process.env.DEFAULT_CLIENT_SECRET;
 module.exports = new BaseKonnector(start);
 
 async function start(fields) {
+  let accountData = this.getAccountData();
   fields = surchargeFields(fields);
 
-  const bankinApi = new BankinApi(fields);
+  const bankinApi = new BankinApi(fields, accountData);
   const { accounts, allOperations } = await bankinApi.fetchAllOperations();
 
-  const { accounts: savedAccounts } = await reconciliator.save(
-    accounts,
-    allOperations
-  );
-  const balances = await fetchBalances(savedAccounts);
-  await saveBalances(balances);
+  try {
+    const { accounts: savedAccounts } = await reconciliator.save(
+      accounts,
+      allOperations
+    );
+    const balances = await fetchBalances(savedAccounts);
+    await saveBalances(balances);
+  } catch (error) {
+    log('error', JSON.stringify(error));
+  }
+
+  log('info', 'Saving account data...');
+  accountData.bankinDeviceId = bankinApi.bankinDeviceId;
+  await this.saveAccountData(accountData);
 }
 
 const surchargeFields = fields => {

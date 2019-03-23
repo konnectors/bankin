@@ -17,19 +17,64 @@ const request = requestFactory({
 });
 
 module.exports = class BankinApi {
-  constructor({ clientId, clientSecret, email, password, bankinDevice }) {
+  constructor({ clientId, clientSecret, email, password }, { bankinDeviceId }) {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
     this.email = email;
     this.password = password;
-    this.bankinDevice = bankinDevice;
+    this.bankinDeviceId = bankinDeviceId;
     this.baseUrl = 'https://sync.bankin.com';
     this.bankinVersion = '2018-06-15';
     this.accessToken = '';
     this.banks = [];
   }
 
+  async generateDeviceId() {
+    const url = `${this.baseUrl}/v2/devices`;
+    const queryString = {
+      client_id: this.clientId,
+      client_secret: this.clientSecret
+    };
+    const requestPayload = {
+      os: 'web',
+      version: '1.0.0',
+      width: 1920,
+      height: 1080,
+      model: 'web',
+      has_fingerprint: false
+    };
+
+    const options = {
+      url,
+      body: requestPayload,
+      json: true,
+      qs: queryString,
+      method: 'POST',
+      headers: {
+        'bankin-version': this.bankinVersion
+      }
+    };
+
+    return new Promise(async resolve => {
+      try {
+        const response = await request(options);
+
+        this.bankinDeviceId = response.udid;
+        resolve(this.bankinDeviceId);
+      } catch (error) {
+        log('error', error);
+        throw new Error(errors.VENDOR_DOWN);
+      }
+    });
+  }
+
   async init() {
+    if (!this.bankinDeviceId) {
+      log('info', 'Generating device id ...');
+      await this.generateDeviceId();
+      log('info', 'Successfully generated device id');
+    }
+
     log('info', 'Authenticating ...');
     await this.authenticate();
     log('info', 'Successfully logged in');
@@ -54,7 +99,7 @@ module.exports = class BankinApi {
       method: 'POST',
       headers: {
         'bankin-version': this.bankinVersion,
-        'bankin-device': this.bankinDevice
+        'bankin-device': this.bankinDeviceId
       }
     };
 

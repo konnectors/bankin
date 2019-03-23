@@ -11,11 +11,6 @@
   "categories": ["banking"],
   "frequency": "daily",
   "fields": {
-    "bankinDevice": {
-      "type": "text",
-      "label": "fields.bankinDevice.label",
-      "description": "fields.bankinDevice.description"
-    },
     "email": {
       "type": "text",
       "label": "fields.email.label"
@@ -88,10 +83,6 @@
         }
       },
       "fields": {
-        "bankinDevice": {
-          "label": "Device Bankin",
-          "description": "temporaire"
-        },
         "email": {
           "label": "Adresse email"
         },
@@ -120,10 +111,6 @@
         }
       },
       "fields": {
-        "bankinDevice": {
-          "label": "Device Bankin",
-          "description": "temporary"
-        },
         "email": {
           "label": "Email address"
         },
