@@ -845,4 +845,4 @@ module.exports = {
     cozyCategory: 'uncategorized',
     cozyCategoryId: '0'
   }
-};
+}
