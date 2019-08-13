@@ -9,4 +9,4 @@ module.exports = {
   life_insurance: 'bank',
   special: 'none',
   unknown: 'none'
-};
+}

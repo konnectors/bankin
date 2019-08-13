@@ -1,22 +1,22 @@
-var path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
-const fs = require('fs');
-const SvgoInstance = require('svgo');
-const webpack = require('webpack');
+var path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+const fs = require('fs')
+const SvgoInstance = require('svgo')
+const webpack = require('webpack')
 
-const entry = require('./package.json').main;
+const entry = require('./package.json').main
 
-const svgo = new SvgoInstance();
+const svgo = new SvgoInstance()
 
-let iconName;
+let iconName
 try {
-  iconName = JSON.parse(fs.readFileSync('manifest.konnector', 'utf8')).icon;
+  iconName = JSON.parse(fs.readFileSync('manifest.konnector', 'utf8')).icon
   // we run optimize only on SVG
-  if (!iconName.match(/\.svg$/)) iconName = null;
+  if (!iconName.match(/\.svg$/)) iconName = null
 } catch (e) {
   // console.error(`Unable to read the icon path from manifest: ${e}`)
 }
-const appIconRX = iconName && new RegExp(`[^/]*/${iconName}`);
+const appIconRX = iconName && new RegExp(`[^/]*/${iconName}`)
 
 module.exports = {
   entry,
@@ -40,12 +40,12 @@ module.exports = {
       'DEFAULT_CLIENT_SECRET'
     ])
   ]
-};
+}
 
 function optimizeSVGIcon(buffer, path) {
   if (appIconRX && path.match(appIconRX)) {
-    return svgo.optimize(buffer).then(resp => resp.data);
+    return svgo.optimize(buffer).then(resp => resp.data)
   } else {
-    return buffer;
+    return buffer
   }
 }

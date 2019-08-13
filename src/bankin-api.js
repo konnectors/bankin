@@ -1,7 +1,7 @@
-const { requestFactory, errors, log } = require('cozy-konnector-libs');
+const { requestFactory, errors, log } = require('cozy-konnector-libs')
 
-const accountTypeMapping = require('./account-type-mapping');
-const operationCategoryMapping = require('./operation-category-mapping');
+const accountTypeMapping = require('./account-type-mapping')
+const operationCategoryMapping = require('./operation-category-mapping')
 
 const request = requestFactory({
   // the debug mode shows all the details about http request and responses. Very useful for
@@ -14,27 +14,27 @@ const request = requestFactory({
   json: true,
   // this allows request-promise to keep cookies between requests
   jar: true
-});
+})
 
 module.exports = class BankinApi {
   constructor({ clientId, clientSecret, email, password }, { bankinDeviceId }) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-    this.email = email;
-    this.password = password;
-    this.bankinDeviceId = bankinDeviceId;
-    this.baseUrl = 'https://sync.bankin.com';
-    this.bankinVersion = '2018-06-15';
-    this.accessToken = '';
-    this.banks = [];
+    this.clientId = clientId
+    this.clientSecret = clientSecret
+    this.email = email
+    this.password = password
+    this.bankinDeviceId = bankinDeviceId
+    this.baseUrl = 'https://sync.bankin.com'
+    this.bankinVersion = '2018-06-15'
+    this.accessToken = ''
+    this.banks = []
   }
 
   async generateDeviceId() {
-    const url = `${this.baseUrl}/v2/devices`;
+    const url = `${this.baseUrl}/v2/devices`
     const queryString = {
       client_id: this.clientId,
       client_secret: this.clientSecret
-    };
+    }
     const requestPayload = {
       os: 'web',
       version: '1.0.0',
@@ -42,7 +42,7 @@ module.exports = class BankinApi {
       height: 1080,
       model: 'web',
       has_fingerprint: false
-    };
+    }
 
     const options = {
       url,
@@ -53,45 +53,43 @@ module.exports = class BankinApi {
       headers: {
         'bankin-version': this.bankinVersion
       }
-    };
+    }
 
-    return new Promise(async resolve => {
-      try {
-        const response = await request(options);
+    try {
+      const response = await request(options)
 
-        this.bankinDeviceId = response.udid;
-        resolve(this.bankinDeviceId);
-      } catch (error) {
-        log('error', error);
-        throw new Error(errors.VENDOR_DOWN);
-      }
-    });
+      this.bankinDeviceId = response.udid
+      return this.bankinDeviceId
+    } catch (error) {
+      log('error', error)
+      throw new Error(errors.VENDOR_DOWN)
+    }
   }
 
   async init() {
     if (!this.bankinDeviceId) {
-      log('info', 'Generating device id ...');
-      await this.generateDeviceId();
-      log('info', 'Successfully generated device id');
+      log('info', 'Generating device id ...')
+      await this.generateDeviceId()
+      log('info', 'Successfully generated device id')
     }
 
-    log('info', 'Authenticating ...');
-    await this.authenticate();
-    log('info', 'Successfully logged in');
+    log('info', 'Authenticating ...')
+    await this.authenticate()
+    log('info', 'Successfully logged in')
 
-    log('info', 'Fetching banks');
-    await this.fetchBanks();
-    log('info', `Found #${Object.keys(this.banks).length} banks`);
+    log('info', 'Fetching banks')
+    await this.fetchBanks()
+    log('info', `Found #${Object.keys(this.banks).length} banks`)
   }
 
-  authenticate() {
-    const url = `${this.baseUrl}/v2/authenticate`;
+  async authenticate() {
+    const url = `${this.baseUrl}/v2/authenticate`
     const qs = {
       client_id: this.clientId,
       client_secret: this.clientSecret,
       email: this.email,
       password: this.password
-    };
+    }
 
     const options = {
       url,
@@ -101,76 +99,76 @@ module.exports = class BankinApi {
         'bankin-version': this.bankinVersion,
         'bankin-device': this.bankinDeviceId
       }
-    };
+    }
 
-    return new Promise(async resolve => {
-      try {
-        const tokens = await request(options);
+    try {
+      const tokens = await request(options)
 
-        this.accessToken = tokens.access_token;
-        resolve(tokens);
-      } catch (error) {
-        throw new Error(errors.LOGIN_FAILED);
-      }
-    });
+      this.accessToken = tokens.access_token
+      return tokens
+    } catch (error) {
+      throw new Error(errors.LOGIN_FAILED)
+    }
   }
 
   async fetchAllOperations() {
-    await this.init();
-    log('info', 'Fetching the list of accounts');
-    const accounts = await this.fetchAccounts();
-    log('info', `Found #${accounts.length} accounts`);
+    await this.init()
+    log('info', 'Fetching the list of accounts')
+    const accounts = await this.fetchAccounts()
+    log('info', `Found #${accounts.length} accounts`)
 
-    const allOperations = await this.fetchAccountsOperations(accounts);
+    const allOperations = await this.fetchAccountsOperations(accounts)
 
-    return { accounts, allOperations };
+    return { accounts, allOperations }
   }
 
   async fetchAccountsOperations(accounts) {
-    let allOperations = [];
+    let allOperations = []
 
-    log('info', 'Fetching operations');
+    log('info', 'Fetching operations')
     for (let account of accounts) {
       log(
         'info',
         `Fetching operations of account ${account.vendorId} - ${account.label}`
-      );
-      let operations = await this.fetchOperations(account);
-      log('info', `Found #${operations.length} operations`);
+      )
+      let operations = await this.fetchOperations(account)
+      log('info', `Found #${operations.length} operations`)
 
-      allOperations = [...allOperations, ...operations];
+      allOperations = [...allOperations, ...operations]
     }
-    log('info', `Found #${allOperations.length} operations before filtering`);
-    allOperations = this.filterOperations(accounts, allOperations);
-    log('info', `Found #${allOperations.length} operations after filtering`);
+    log('info', `Found #${allOperations.length} operations before filtering`)
+    allOperations = this.filterOperations(accounts, allOperations)
+    log('info', `Found #${allOperations.length} operations after filtering`)
 
-    return allOperations;
+    return allOperations
   }
 
   filterOperations(accounts, operations) {
-    const vendorsIds = accounts.map(account => account.vendorId);
-    const operationsIds = [];
+    const vendorsIds = accounts.map(account => account.vendorId)
+    const operationsIds = []
 
     return operations
-      .filter(operation => vendorsIds.indexOf(operation.vendorAccountId) !== -1)
+      .filter(operation => {
+        return vendorsIds.indexOf(operation.vendorAccountId) !== -1
+      })
       .filter(operation => {
         if (operationsIds.indexOf(operation.vendorId) === -1) {
-          operationsIds.push(operation.vendorId);
+          operationsIds.push(operation.vendorId)
 
-          return true;
+          return true
         }
 
-        return false;
-      });
+        return false
+      })
   }
 
-  fetchBanks() {
-    const url = `${this.baseUrl}/v2/banks`;
+  async fetchBanks() {
+    const url = `${this.baseUrl}/v2/banks`
     const qs = {
       client_id: this.clientId,
       client_secret: this.clientSecret,
       limit: 200
-    };
+    }
 
     const options = {
       url,
@@ -179,41 +177,39 @@ module.exports = class BankinApi {
       headers: {
         'bankin-version': this.bankinVersion
       }
-    };
+    }
 
-    return new Promise(async resolve => {
-      try {
-        const response = await request(options);
+    try {
+      const response = await request(options)
 
-        this.banks = this.formatBanks(response.resources);
-        resolve(this.banks);
-      } catch (error) {
-        throw new Error(errors.VENDOR_DOWN);
-      }
-    });
+      this.banks = this.formatBanks(response.resources)
+      return this.banks
+    } catch (error) {
+      throw new Error(errors.VENDOR_DOWN)
+    }
   }
 
   formatBanks(countries) {
-    let banks = {};
+    let banks = {}
 
     countries.forEach(country => {
       country.parent_banks.forEach(parentBank => {
         parentBank.banks.forEach(bank => {
-          banks[bank.id] = bank;
-        });
-      });
-    });
+          banks[bank.id] = bank
+        })
+      })
+    })
 
-    return banks;
+    return banks
   }
 
-  fetchAccounts() {
-    const url = `${this.baseUrl}/v2/accounts`;
+  async fetchAccounts() {
+    const url = `${this.baseUrl}/v2/accounts`
     const qs = {
       client_id: this.clientId,
       client_secret: this.clientSecret,
       limit: 200
-    };
+    }
 
     const options = {
       url,
@@ -223,25 +219,23 @@ module.exports = class BankinApi {
         'bankin-version': this.bankinVersion,
         authorization: `Bearer ${this.accessToken}`
       }
-    };
+    }
 
-    return new Promise(async resolve => {
-      try {
-        const response = await request(options);
+    try {
+      const response = await request(options)
 
-        resolve(this.formatAccounts(response.resources));
-      } catch (error) {
-        throw new Error(errors.VENDOR_DOWN);
-      }
-    });
+      return this.formatAccounts(response.resources)
+    } catch (error) {
+      throw new Error(errors.VENDOR_DOWN)
+    }
   }
 
   formatAccounts(accounts) {
     return accounts.map(account => {
-      let bank = 'none';
+      let bank = 'none'
 
       if (account.bank.id in this.banks) {
-        bank = this.banks[account.bank.id].name;
+        bank = this.banks[account.bank.id].name
       }
 
       return {
@@ -252,19 +246,19 @@ module.exports = class BankinApi {
           account.type in accountTypeMapping
             ? accountTypeMapping[account.type]
             : 'none',
-        number: account.id,
-        vendorId: account.id
-      };
-    });
+        number: String(account.id),
+        vendorId: String(account.id)
+      }
+    })
   }
 
   async fetchOperations(account) {
-    const url = `${this.baseUrl}/v2/accounts/${account.vendorId}/transactions`;
+    const url = `${this.baseUrl}/v2/accounts/${account.vendorId}/transactions`
     const qs = {
       client_id: this.clientId,
       client_secret: this.clientSecret,
       limit: 200
-    };
+    }
 
     const options = {
       url,
@@ -274,26 +268,23 @@ module.exports = class BankinApi {
         'bankin-version': this.bankinVersion,
         authorization: `Bearer ${this.accessToken}`
       }
-    };
-    let operations = [];
-    let hasNext = false;
+    }
+    let operations = []
+    let hasNext = false
 
     do {
-      const response = await request(options);
+      const response = await request(options)
 
-      operations = [
-        ...operations,
-        ...this.formatOperations(response.resources)
-      ];
-      hasNext = false;
+      operations = [...operations, ...this.formatOperations(response.resources)]
+      hasNext = false
 
       if (response.pagination.next_uri) {
-        hasNext = true;
-        options.url = `${this.baseUrl}${response.pagination.next_uri}`;
+        hasNext = true
+        options.url = `${this.baseUrl}${response.pagination.next_uri}`
       }
-    } while (hasNext);
+    } while (hasNext)
 
-    return operations;
+    return operations
   }
 
   formatOperations(operations) {
@@ -301,7 +292,7 @@ module.exports = class BankinApi {
       const category =
         operation.category.id in operationCategoryMapping
           ? operationCategoryMapping[operation.category.id].cozyCategoryId
-          : 0;
+          : 0
 
       return {
         date: new Date(operation.date),
@@ -312,10 +303,10 @@ module.exports = class BankinApi {
         dateImport: new Date(),
         dateOperation: new Date(operation.date),
         currency: operation.currency_code,
-        vendorAccountId: operation.account.id,
+        vendorAccountId: String(operation.account.id),
         vendorId: operation.id,
         amount: operation.amount
-      };
-    });
+      }
+    })
   }
-};
+}
