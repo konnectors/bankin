@@ -1,0 +1,128 @@
+{
+  "version": "1.1.0",
+  "name": "Bankin'",
+  "type": "konnector",
+  "language": "node",
+  "icon": "icon.png",
+  "slug": "bankin",
+  "source": "git@github.com:konnectors/bankin.git",
+  "editor": "Cozy",
+  "vendor_link": "https://bankin.com/",
+  "categories": ["banking"],
+  "frequency": "daily",
+  "fields": {
+    "email": {
+      "type": "text",
+      "label": "fields.email.label"
+    },
+    "password": {
+      "type": "password",
+      "label": "fields.password.label"
+    },
+    "advancedFields": {
+      "folderPath": {
+        "advanced": true,
+        "isRequired": false
+      },
+      "clientId": {
+        "type": "text",
+        "advanced": true,
+        "isRequired": false,
+        "label": "fields.clientId.label",
+        "description": "fields.clientId.description"
+      },
+      "clientSecret": {
+        "type": "text",
+        "advanced": true,
+        "isRequired": false,
+        "label": "fields.clientSecret.label",
+        "description": "fields.clientSecret.description"
+      }
+    }
+  },
+  "data_types": ["bankAccounts", "bankTransactions"],
+  "screenshots": [],
+  "permissions": {
+    "bank.accounts": {
+      "description": "Required to save the list of bank accounts",
+      "type": "io.cozy.bank.accounts"
+    },
+    "bank.operations": {
+      "description": "Required to save your bank operations",
+      "type": "io.cozy.bank.operations"
+    },
+    "accounts": {
+      "description": "Required to get the account's data",
+      "type": "io.cozy.accounts",
+      "verbs": ["GET"]
+    },
+    "bank.balancehistories": {
+      "description": "Required to save balance histories",
+      "type": "io.cozy.bank.balancehistories"
+    }
+  },
+  "developer": {
+    "name": "Naji Astier",
+    "url": "https://github.com/na-ji"
+  },
+  "langs": ["fr", "en"],
+  "locales": {
+    "fr": {
+      "short_description": "Récupère vos opérations bancaires",
+      "long_description": "Récupère vos opérations bancaires",
+      "permissions": {
+        "bank.accounts": {
+          "description": "Utilisé pour sauvegarder la liste de vos comptes bancaires"
+        },
+        "bank.balancehistories": {
+          "description": "Utilisé pour sauvegarder les historiques de solde"
+        }
+      },
+      "fields": {
+        "email": {
+          "label": "Adresse email"
+        },
+        "password": {
+          "label": "Mot de passe"
+        },
+        "clientId": {
+          "label": "Client ID (optionnel)",
+          "description": "Client ID pour se connecter à l'API Bankin'. Possiblité d'avoir son propre Client sur https://bridgeapi.io/"
+        },
+        "clientSecret": {
+          "label": "Client Secret (optionnel)",
+          "description": "Client Secret pour se connecter à l'API Bankin'. Possiblité d'avoir son propre Client sur https://bridgeapi.io/"
+        }
+      }
+    },
+    "en": {
+      "short_description": "Retrieves your bank operations",
+      "long_description": "Retrieves your bank operations",
+      "permissions": {
+        "bank.accounts": {
+          "description": "Used to save the list of bank accounts"
+        },
+        "bank.balancehistories": {
+          "description": "Required to save balance histories"
+        }
+      },
+      "fields": {
+        "email": {
+          "label": "Email address"
+        },
+        "password": {
+          "label": "Password"
+        },
+        "clientId": {
+          "label": "Client ID (optional)",
+          "description": "Client ID to use Bankin' API. Possibility to create your client on https://bridgeapi.io/"
+        },
+        "clientSecret": {
+          "label": "Client Secret (optional)",
+          "description": "Client Secret to use Bankin' API. Possibility to create your client on https://bridgeapi.io/"
+        }
+      }
+    }
+  },
+  "manifest_version": "2"
+}
