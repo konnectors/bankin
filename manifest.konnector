@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.1.0",
   "name": "Bankin'",
   "type": "konnector",
   "language": "node",
@@ -8,9 +8,7 @@
   "source": "git@github.com:konnectors/bankin.git",
   "editor": "Cozy",
   "vendor_link": "https://bankin.com/",
-  "categories": [
-    "banking"
-  ],
+  "categories": ["banking"],
   "frequency": "daily",
   "fields": {
     "email": {
@@ -42,10 +40,7 @@
       }
     }
   },
-  "data_types": [
-    "bankAccounts",
-    "bankTransactions"
-  ],
+  "data_types": ["bankAccounts", "bankTransactions"],
   "screenshots": [],
   "permissions": {
     "bank.accounts": {
@@ -59,9 +54,7 @@
     "accounts": {
       "description": "Required to get the account's data",
       "type": "io.cozy.accounts",
-      "verbs": [
-        "GET"
-      ]
+      "verbs": ["GET"]
     },
     "bank.balancehistories": {
       "description": "Required to save balance histories",
@@ -72,10 +65,7 @@
     "name": "Naji Astier",
     "url": "https://github.com/na-ji"
   },
-  "langs": [
-    "fr",
-    "en"
-  ],
+  "langs": ["fr", "en"],
   "locales": {
     "fr": {
       "short_description": "Récupère vos opérations bancaires",
