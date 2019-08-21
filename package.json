@@ -39,13 +39,13 @@
   },
   "dependencies": {
     "cozy-doctypes": "1.62.0",
-    "cozy-konnector-libs": "4.21.0",
+    "cozy-konnector-libs": "4.22.1",
     "moment": "2.24.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "5.0.4",
     "cozy-app-publish": "0.18.0",
-    "cozy-jobs-cli": "1.9.9",
+    "cozy-jobs-cli": "1.9.13",
     "eslint": "6.1.0",
     "eslint-config-cozy-app": "1.2.0",
     "eslint-plugin-prettier": "3.1.0",
