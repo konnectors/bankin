@@ -30,9 +30,9 @@ module.exports = new BaseKonnector(start)
 async function start(fields) {
   let accountData = this.getAccountData()
   // let accountData = {}
-  fields = surchargeFields(fields)
+  const surchargedFiels = surchargeFields(fields)
 
-  const bankinApi = new BankinApi(fields, accountData)
+  const bankinApi = new BankinApi(surchargedFiels, accountData)
   const { accounts, allOperations } = await bankinApi.fetchAllOperations()
 
   try {
