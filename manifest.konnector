@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.2.1",
   "name": "Bankin'",
   "type": "konnector",
   "language": "node",
@@ -21,24 +21,24 @@
       "type": "password",
       "label": "fields.password.label"
     },
+    "clientId": {
+      "type": "text",
+      "advanced": true,
+      "isRequired": false,
+      "label": "fields.clientId.label",
+      "description": "fields.clientId.description"
+    },
+    "clientSecret": {
+      "type": "text",
+      "advanced": true,
+      "isRequired": false,
+      "label": "fields.clientSecret.label",
+      "description": "fields.clientSecret.description"
+    },
     "advancedFields": {
       "folderPath": {
         "advanced": true,
         "isRequired": false
-      },
-      "clientId": {
-        "type": "text",
-        "advanced": true,
-        "isRequired": false,
-        "label": "fields.clientId.label",
-        "description": "fields.clientId.description"
-      },
-      "clientSecret": {
-        "type": "text",
-        "advanced": true,
-        "isRequired": false,
-        "label": "fields.clientSecret.label",
-        "description": "fields.clientSecret.description"
       }
     }
   },
@@ -66,6 +66,10 @@
     "bank.balancehistories": {
       "description": "Required to save balance histories",
       "type": "io.cozy.bank.balancehistories"
+    },
+    "files": {
+      "description": "Required to save the account statements",
+      "type": "io.cozy.files"
     }
   },
   "developer": {
