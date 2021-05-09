@@ -29,7 +29,8 @@ module.exports = new BaseKonnector(start)
 
 async function start(fields) {
   let accountData = this.getAccountData()
-  // let accountData = {}
+  log('info', `Current account data: ${JSON.stringify(accountData || {})}`)
+
   const surchargedFiels = surchargeFields(fields)
 
   const bankinApi = new BankinApi(surchargedFiels, accountData)
