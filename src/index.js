@@ -46,9 +46,14 @@ async function start(fields) {
     log('error', error)
   }
 
-  log('info', 'Saving account data...')
-  accountData.bankinDeviceId = bankinApi.bankinDeviceId
-  await this.saveAccountData(accountData)
+  try {
+    log('info', 'Saving account data...')
+    accountData.bankinDeviceId = bankinApi.bankinDeviceId
+    await this.saveAccountData(accountData)
+  } catch (error) {
+    log('error', 'Could not save account data')
+    log('error', error)
+  }
 }
 
 const surchargeFields = fields => {
