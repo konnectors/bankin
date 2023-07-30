@@ -30,13 +30,16 @@ module.exports = new BaseKonnector(start)
 
 async function start(fields) {
   let accountData = this.getAccountData()
-  log('info', `Current account data: ${JSON.stringify(accountData || {})}`)
 
   const surchargedFiels = surchargeFields(fields)
 
   const bankinApi = new BankinApi(surchargedFiels, accountData)
   const { accounts, allOperations } = await bankinApi.fetchAllOperations()
-  const categorizedTransactions = await categorize(allOperations)
+  const now = moment()
+  const todayAsString = now.format('YYYY-MM-DD')
+  const categorizedTransactions = await categorize(
+    allOperations.filter(o => !o.is_future && o.date <= todayAsString)
+  )
 
   try {
     const { accounts: savedAccounts } = await reconciliator.save(
