@@ -24,8 +24,8 @@
   },
   "scripts": {
     "start": "node ./src/index.js",
-    "dev": "node $NODE_DEBUG_OPTION node_modules/.bin/cozy-konnector-dev",
-    "standalone": "node $NODE_DEBUG_OPTION node_modules/.bin/cozy-konnector-standalone",
+    "dev": "cozy-konnector-dev",
+    "standalone": "cozy-konnector-standalone",
     "pretest": "npm run clean",
     "clean": "rm -rf ./data",
     "build": "webpack",
